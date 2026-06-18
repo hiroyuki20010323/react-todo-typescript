@@ -1,4 +1,5 @@
 import useFetch from '../hooks/useFetch'
+import FetchView from './FetchView'
 
 type Post = {
   id: number
@@ -11,20 +12,17 @@ const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts?_limit=5'
 function PostList() {
   const status = useFetch<Post[]>(POSTS_URL)
 
-  switch (status.kind) {
-    case 'loading':
-      return <p>読み込み中...</p>
-    case 'error':
-      return <p>エラー: {status.message}</p>
-    case 'success':
-      return (
+  return (
+    <FetchView status={status}>
+      {(posts) => (
         <ul>
-          {status.data.map((post) => (
+          {posts.map((post) => (
             <li key={post.id}>{post.title}</li>
           ))}
         </ul>
-      )
-  }
+      )}
+    </FetchView>
+  )
 }
 
 export default PostList
