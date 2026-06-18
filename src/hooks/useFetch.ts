@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react'
-
-export type FetchStatus<T> =
-  | { kind: 'loading' }
-  | { kind: 'success'; data: T }
-  | { kind: 'error'; message: string }
+import type { FetchStatus } from '../types/FetchStatus'
 
 function useFetch<T>(url: string): FetchStatus<T> {
   const [status, setStatus] = useState<FetchStatus<T>>({ kind: 'loading' })

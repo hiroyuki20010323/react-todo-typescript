@@ -24,16 +24,18 @@ npm run lint     # ESLint
 ```
 src/
   types/
-    Todo.ts          # Todo / NewTodo / Priority（複数箇所で共有する型のみ）
+    Todo.ts          # Todo / NewTodo / Priority
+    FetchStatus.ts   # 通信状態（useFetch と FetchView が共有）
   constants/
     priority.ts      # 優先度の色・選択肢
   hooks/
     useTodos.ts      # Todo の状態と操作（add / toggle / delete）
-    useFetch.ts      # 汎用フェッチフック + FetchStatus<T>
+    useFetch.ts      # 汎用フェッチフック
   components/
     TodoForm.tsx     # 入力フォーム（検証もここ）
     TodoItem.tsx     # Todo 1 件の表示
     TodoList.tsx     # 一覧の描画
+    FetchView.tsx    # 通信状態の表示を共通化（render prop）
     UserList.tsx     # ユーザー一覧（useFetch を利用）
     PostList.tsx     # 投稿一覧（useFetch を利用）
   App.tsx            # 各パーツの組み立て
@@ -62,9 +64,11 @@ const { todos, addTodo, toggleTodo, deleteTodo, remainingCount } = useTodos()
 | `Todo` / `NewTodo` / `Priority` | 複数ファイル | `types/Todo.ts` に切り出す |
 | `User` | `UserList` のみ | `UserList.tsx` 内に同居 |
 | `Post` | `PostList` のみ | `PostList.tsx` 内に同居 |
-| `FetchStatus<T>` | `useFetch` のみ | `useFetch.ts` 内に同居（戻り値の型なので） |
+| `FetchStatus<T>` | `useFetch` + `FetchView` | `types/FetchStatus.ts` に切り出し |
 
 > 1 箇所でしか使わない型を別ファイルに切り出すのは、まだ存在しない再利用を見越した先回り＝オーバーエンジニアリング。**使う場所に置けば定義を探してファイルを行き来せずに済む。** 2 箇所目が現れた時点で共有ファイルへ昇格させる。
+>
+> 実際 `FetchStatus` は当初 `useFetch.ts` に同居させていたが、通信状態の表示を共通化する `FetchView` を追加した時点で参照が 2 箇所になり、この基準どおり `types/` へ昇格させた。
 
 ## 3. バリデーションはフォームの責務
 
@@ -97,7 +101,7 @@ const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
 
 ## 5. データ取得は Discriminated Union で型安全に
 
-[`useFetch<T>`](src/hooks/useFetch.ts) は通信状態を `FetchStatus<T>` で返し、利用側は `switch` で網羅的に分岐する。
+[`useFetch<T>`](src/hooks/useFetch.ts) は通信状態を `FetchStatus<T>` で返す。`switch` による網羅的な分岐は [`FetchView<T>`](src/components/FetchView.tsx) に集約し、各コンポーネントは成功時の描画だけを渡す（render prop）。これで `loading`/`error` の表示が 1 箇所になり、`UserList`/`PostList` から重複が消える。
 
 ```ts
 export type FetchStatus<T> =

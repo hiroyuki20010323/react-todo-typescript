@@ -12,8 +12,9 @@ function TodoForm({ onAdd }: TodoFormProps) {
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (text.trim() === '') return
-    onAdd({ text: text.trim(), priority })
+    const trimmed = text.trim()
+    if (trimmed === '') return
+    onAdd({ text: trimmed, priority })
     setText('')
     setPriority('medium')
   }
